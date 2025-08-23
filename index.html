@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>密室逃脱游戏</title>
+  <style>
+    /* 设置页面背景和主体容器 */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      font-family: sans-serif;
+      background-color: #f5f5f5;
+    }
+    #game-container {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      background-image: url('background.png');
+      background-size: cover;
+      background-position: center;
+      overflow: hidden;
+    }
+    /* 可交互物品公共样式 */
+    .item {
+      position: absolute;
+      cursor: pointer;
+      /* 提高点击区域大小 */
+      background-color: rgba(255, 255, 255, 0.0);
+    }
+    /* 各物品的位置（根据背景图调整） */
+    /* 调整各物品覆盖区域，以便更容易点击 */
+    .painting {
+      /* 覆盖左侧窗口作为画框区域 */
+      top: 15%;
+      left: 5%;
+      width: 22%;
+      height: 30%;
+      z-index: 10;
+    }
+    .desk {
+      /* 覆盖桌子 */
+      top: 57%;
+      left: 15%;
+      width: 30%;
+      height: 25%;
+      z-index: 11;
+    }
+    .bookshelf {
+      /* 覆盖书架本体，避免覆盖盆栽 */
+      top: 32%;
+      left: 45%;
+      width: 18%;
+      height: 38%;
+      z-index: 12;
+    }
+    .plant {
+      /* 覆盖盆栽 */
+      top: 58%;
+      left: 55%;
+      width: 18%;
+      height: 38%;
+      z-index: 13;
+    }
+    .door {
+      /* 覆盖右侧房门 */
+      top: 15%;
+      right: 4%;
+      width: 25%;
+      height: 60%;
+      z-index: 14;
+    }
+    /* 信息提示区 */
+    #message {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 10px;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 16px;
+      color: #333;
+      min-width: 40%;
+      text-align: center;
+      display: none;
+    }
+    /* 道具栏 */
+    #inventory {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #inventory img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+    }
+    /* 通用模态框背景 */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      width: 80%;
+      max-width: 420px;
+    }
+    .modal h3 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-size: 20px;
+      color: #333;
+    }
+    .modal .close-btn {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      background: #f0f0f0;
+      border: none;
+      border-radius: 50%;
+      width: 26px;
+      height: 26px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      color: #666;
+    }
+    .modal .close-btn:hover {
+      background: #e0e0e0;
+    }
+    .modal-content {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 16px;
+      color: #444;
+    }
+    /* 画框谜题样式 */
+    .painting-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-gap: 6px;
+      margin-top: 12px;
+    }
+    .painting-grid div {
+      background-color: #f9f9f9;
+      border: 2px solid #ccc;
+      border-radius: 4px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+    }
+    /* 单词拼图样式 */
+    .letters {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 12px 0;
+    }
+    .letters span {
+      width: 40px;
+      height: 40px;
+      background: #e8e8e8;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: bold;
+      color: #555;
+    }
+    /* 输入框样式 */
+    input[type="text"], input[type="number"] {
+      padding: 6px;
+      margin-top: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 80%;
+      font-size: 16px;
+    }
+    .btn {
+      margin-top: 12px;
+      padding: 6px 12px;
+      background-color: #4caf50;
+      border: none;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background-color: #45a049;
+    }
+    /* 三位密码输入框 */
+    .code-inputs {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 12px 0;
+    }
+    .code-inputs input {
+      width: 50px;
+      text-align: center;
+      font-size: 22px;
+      padding: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <!-- 交互点 -->
+    <div class="item painting" onclick="openPainting()" title="墙上的画"></div>
+    <div class="item desk" onclick="openDrawer()" title="桌子上有抽屉"></div>
+    <div class="item bookshelf" onclick="openBookPuzzle()" title="书架"></div>
+    <div class="item plant" onclick="openRiddle()" title="盆栽"></div>
+    <div class="item door" onclick="tryEscape()" title="房门"></div>
+    <!-- 信息提示条 -->
+    <div id="message"></div>
+    <!-- 道具栏 -->
+    <div id="inventory"></div>
+  </div>
+  <!-- 画框谜题模态框 -->
+  <div id="paintingModal" class="modal-overlay">
+    <div class="modal">
+      <button class="close-btn" onclick="closeModal('paintingModal')">×</button>
+      <h3>奇怪的画框</h3>
+      <div class="modal-content">
+        画框上有四个数字，最大的数字减去最小的数字是第一位密码。
+        <div class="painting-grid">
+          <div>9</div>
+          <div>2</div>
+          <div>7</div>
+          <div>4</div>
+        </div>
+        <p>记住得到的数字。</p>
+      </div>
+    </div>
+  </div>
+  <!-- 单词拼图模态框 -->
+  <div id="bookModal" class="modal-overlay">
+    <div class="modal">
+      <button class="close-btn" onclick="closeModal('bookModal')">×</button>
+      <h3>书架上的字谜</h3>
+      <div class="modal-content">
+        将下面的字母重新排列，组成一个英文单词，表示一个数字。
+        <div class="letters">
+          <span>O</span>
+          <span>T</span>
+          <span>W</span>
+        </div>
+        <input type="text" id="wordInput" placeholder="输入英文单词" />
+        <button class="btn" onclick="checkWord()">确认</button>
+        <p id="wordHint"></p>
+      </div>
+    </div>
+  </div>
+  <!-- 盆栽谜语模态框 -->
+  <div id="riddleModal" class="modal-overlay">
+    <div class="modal">
+      <button class="close-btn" onclick="closeModal('riddleModal')">×</button>
+      <h3>盆栽下的纸条</h3>
+      <div class="modal-content">
+        纸条上写着：<br />
+        <em>“什么东西没有嘴却能说话，没有耳朵却能听见，没有身体却能随着风而存在？”</em>
+        <br />请用一个英文单词作答。
+        <input type="text" id="riddleInput" placeholder="输入答案" />
+        <button class="btn" onclick="checkRiddle()">确认</button>
+        <p id="riddleHint"></p>
+      </div>
+    </div>
+  </div>
+  <!-- 抽屉密码模态框 -->
+  <div id="drawerModal" class="modal-overlay">
+    <div class="modal">
+      <button class="close-btn" onclick="closeModal('drawerModal')">×</button>
+      <h3>抽屉密码锁</h3>
+      <div class="modal-content">
+        输入三位数字密码：
+        <div class="code-inputs">
+          <input type="number" id="code1" min="0" max="9" />
+          <input type="number" id="code2" min="0" max="9" />
+          <input type="number" id="code3" min="0" max="9" />
+        </div>
+        <button class="btn" onclick="checkCode()">确认</button>
+        <p id="codeHint"></p>
+      </div>
+    </div>
+  </div>
+  <script>
+    // 存储游戏状态
+    let hasKey = false;
+    let solvedPainting = false;
+    let solvedWord = false;
+    let solvedRiddle = false;
+    // 密码的三位数字
+    const codeDigits = {
+      painting: 7,
+      word: 2,
+      riddle: 4,
+    };
+
+    /** 显示消息 */
+    function showMessage(text, duration = 2500) {
+      const msgEl = document.getElementById('message');
+      msgEl.textContent = text;
+      msgEl.style.display = 'block';
+      // 隐藏之前的计时器
+      if (showMessage.timer) clearTimeout(showMessage.timer);
+      showMessage.timer = setTimeout(() => {
+        msgEl.style.display = 'none';
+      }, duration);
+    }
+
+    /** 打开模态框 */
+    function openPainting() {
+      document.getElementById('paintingModal').style.display = 'flex';
+      solvedPainting = true;
+    }
+    function openBookPuzzle() {
+      const modal = document.getElementById('bookModal');
+      // 重置输入和提示
+      document.getElementById('wordInput').value = '';
+      document.getElementById('wordHint').textContent = '';
+      modal.style.display = 'flex';
+    }
+    function openRiddle() {
+      const modal = document.getElementById('riddleModal');
+      // 重置输入和提示
+      document.getElementById('riddleInput').value = '';
+      document.getElementById('riddleHint').textContent = '';
+      modal.style.display = 'flex';
+    }
+    function openDrawer() {
+      const modal = document.getElementById('drawerModal');
+      // 重置输入框和提示
+      document.getElementById('code1').value = '';
+      document.getElementById('code2').value = '';
+      document.getElementById('code3').value = '';
+      document.getElementById('codeHint').textContent = '';
+      modal.style.display = 'flex';
+    }
+    /** 关闭模态框 */
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+    /** 校验拼字谜 */
+    function checkWord() {
+      const input = document.getElementById('wordInput').value.trim().toUpperCase();
+      const hintEl = document.getElementById('wordHint');
+      if (input === '') {
+        hintEl.textContent = '请输入答案。';
+        return;
+      }
+      if (input === 'TWO') {
+        solvedWord = true;
+        hintEl.innerHTML = '<strong>正确！第二位密码是' + codeDigits.word + '。</strong>';
+      } else {
+        hintEl.textContent = '答案不正确。试试重新排列。';
+      }
+    }
+    /** 校验谜语答案 */
+    function checkRiddle() {
+      const input = document.getElementById('riddleInput').value.trim().toLowerCase();
+      const hintEl = document.getElementById('riddleHint');
+      if (input === '') {
+        hintEl.textContent = '请输入答案。';
+        return;
+      }
+      // 接受 echo 或回声
+      if (input === 'echo' || input === '回声' || input === '回聲') {
+        solvedRiddle = true;
+        hintEl.innerHTML = '<strong>回答正确！第三位密码是' + codeDigits.riddle + '。</strong>';
+      } else {
+        hintEl.textContent = '答案不正确。再想想。';
+      }
+    }
+    /** 校验抽屉密码 */
+    function checkCode() {
+      const c1 = document.getElementById('code1').value;
+      const c2 = document.getElementById('code2').value;
+      const c3 = document.getElementById('code3').value;
+      const hintEl = document.getElementById('codeHint');
+      if (c1 === '' || c2 === '' || c3 === '') {
+        hintEl.textContent = '请填写完整的密码。';
+        return;
+      }
+      if (
+        parseInt(c1) === codeDigits.painting &&
+        parseInt(c2) === codeDigits.word &&
+        parseInt(c3) === codeDigits.riddle
+      ) {
+        if (!hasKey) {
+          hasKey = true;
+          hintEl.innerHTML = '<strong>密码正确！抽屉打开，你获得了一把钥匙。</strong>';
+          // 在道具栏中添加钥匙
+          const inv = document.getElementById('inventory');
+          const img = document.createElement('img');
+          img.src = 'key.png';
+          img.alt = '钥匙';
+          inv.appendChild(img);
+        } else {
+          hintEl.innerHTML = '抽屉已经打开，你已经拿到了钥匙。';
+        }
+      } else {
+        hintEl.textContent = '密码错误。再试试。';
+      }
+    }
+    /** 试图打开房门 */
+    function tryEscape() {
+      if (hasKey) {
+        showMessage('你用钥匙打开了房门，成功逃脱！');
+      } else {
+        showMessage('门被锁住了，似乎需要一把钥匙。');
+      }
+    }
+  </script>
+</body>
+</html>
