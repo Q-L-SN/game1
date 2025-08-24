@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>Redirecting…</title>
+
+  <!-- 兼容型跳转（无 JS 也能跳） -->
+  <meta http-equiv="refresh" content="0; url=game/" />
+
+  <!-- 避免搜索引擎收录这个中转页 -->
+  <meta name="robots" content="noindex" />
+  <link rel="canonical" href="game/" />
+
+  <script>
+    (function () {
+      var target = "game/";
+      var qs = window.location.search || "";
+      var hash = window.location.hash || "";
+      // 防止已在 /game/ 下时重复跳转
+      if (!/\/game\/?$/.test(window.location.pathname)) {
+        window.location.replace(target + qs + hash);
+      }
+    })();
+  </script>
+</head>
+<body>
+  正在跳转到 <a href="game/">game/</a> …
+</body>
+</html>
