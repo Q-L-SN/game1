@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Puzzle Adventure Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Game root container -->
+  <div id="game-container"></div>
+
+  <!-- Inventory bar at bottom -->
+  <div id="inventory-bar">
+    <div class="slot" data-slot="0"></div>
+    <div class="slot" data-slot="1"></div>
+    <div class="slot" data-slot="2"></div>
+    <div class="slot" data-slot="3"></div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="hidden"></div>
+
+  <!-- Mini‑game overlay (hidden until needed) -->
+  <div id="minigame-overlay" class="hidden">
+    <div id="minigame">
+      <h2>配对小游戏</h2>
+      <p>按照顺序点击颜色按钮</p>
+      <div id="color-buttons"></div>
+      <button id="minigame-back">返回</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
